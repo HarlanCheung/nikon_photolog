@@ -44,6 +44,12 @@ photolog/
 pip install -r requirements.txt
 ```
 
+If you're using lens detection for older Nikon lenses, make sure [ExifTool](https://exiftool.org/) is installed:
+
+- macOS: `brew install exiftool`
+- Windows: [Download here](https://exiftool.org/)
+- Linux: `sudo apt install libimage-exiftool-perl`
+  
 ### 2. Run the script
 ```bash
 python main.py <input.nef> <output.jpg> --author "Your Name"
@@ -62,6 +68,7 @@ python main.py images/DSC_0003.NEF output/0003.jpg --author "Harlan"
   - `rawpy`
   - `Pillow`
   - `exifread`
+  - `exiftool` (for accurate lens identification, especially with legacy Nikon lenses)
 
 You can install them via:
 ```bash
@@ -85,7 +92,7 @@ MIT License. Feel free to adapt and use for your own photography workflow.
 ## 🙌 Acknowledgements
 - Nikon RAW reading via [rawpy](https://pypi.org/project/rawpy/)
 - EXIF metadata via [ExifRead](https://pypi.org/project/ExifRead/)
+- Lens decoding via [ExifTool](https://exiftool.org/)
 - Fonts:
   - [TeXGyre Adventor](https://www.gust.org.pl/projects/e-foundry/tex-gyre/adventor)
   - [Avenir Heavy](https://www.myfonts.com/fonts/linotype/avenir/) (used locally)
-
