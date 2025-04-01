@@ -1,4 +1,3 @@
 rawpy
 Pillow
 exifread
-cairosvg
