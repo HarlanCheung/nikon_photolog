@@ -1,0 +1,4 @@
+rawpy
+Pillow
+exifread
+cairosvg
