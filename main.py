@@ -6,10 +6,15 @@ from metadata import get_nef_metadata
 from border import create_bottom_border_canvas
 from compose import compose_photo_card
 
-def load_nef_as_image(nef_path):
-    with rawpy.imread(nef_path) as raw:
-        rgb = raw.postprocess()
-    return Image.fromarray(rgb)
+def load_image(image_path):
+    ext = os.path.splitext(image_path)[1].lower()
+    if ext == ".nef":
+        with rawpy.imread(image_path) as raw:
+            rgb = raw.postprocess()
+        return Image.fromarray(rgb)
+    else:
+        return Image.open(image_path).convert("RGB")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a Nikon photo log image.")
@@ -24,7 +29,7 @@ if __name__ == "__main__":
     output_path = args.output_path
     author = args.author
 
-    img = load_nef_as_image(nef_path)
+    img = load_image(nef_path)
     meta = get_nef_metadata(nef_path)
     print("Metadata:", meta)
 
