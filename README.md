@@ -52,12 +52,12 @@ If you're using lens detection for older Nikon lenses, make sure [ExifTool](http
   
 ### 2. Run the script
 ```bash
-python main.py <input.nef> <output.jpg> --author "Your Name"
+python main.py <input.nef> <output.jpg> --author "Your Name" --border "border mode:blur or basic"
 ```
 
 **Example:**
 ```bash
-python main.py images/DSC_0003.NEF output/0003.jpg --author "Harlan"
+python main.py images/DSC_0003.NEF output/0003.jpg --author "Harlan" --border "blur"
 ```
 
 ---
