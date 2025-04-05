@@ -2,6 +2,8 @@
 
 A Python tool to generate a beautifully formatted photo card from Nikon NEF (RAW) files. The script overlays shooting information, camera and lens details, and author credits onto an image with a custom visual layout.
 
+**Version:** 1.0.1
+
 ---
 
 ## 📸 Features
@@ -15,6 +17,7 @@ A Python tool to generate a beautifully formatted photo card from Nikon NEF (RAW
   - Exposure settings (focal length, aperture, shutter speed, ISO)
   - Author name (e.g., "Photo by Harlan")
 - Automatically adjusts fonts and layout to image size
+- Adds batch processing for `.NEF` and `.JPG` files in a folder
 
 ---
 
@@ -60,6 +63,14 @@ python main.py <input.nef> <output.jpg> --author "Your Name" --border "border mo
 python main.py images/DSC_0003.NEF output/0003.jpg --author "Harlan" --border "blur"
 ```
 
+### Batch Processing Mode
+
+To process all `.NEF` and `.JPG` files in a folder, use the `--batch` flag:
+
+```bash
+python main.py input_folder output_folder --author "Your Name" --border "blur" --batch
+```
+
 ---
 
 ## 📝 Requirements
@@ -74,6 +85,16 @@ You can install them via:
 ```bash
 pip install rawpy Pillow exifread
 ```
+
+---
+
+## 🆕 Changelog
+
+**v1.0.1**
+- Added batch processing support for `.NEF` and `.JPG` images in a folder
+
+**v1.0**
+- Initial release: NEF to JPG with metadata card
 
 ---
 
