@@ -2,6 +2,7 @@ from PIL import Image, ImageDraw, ImageFont
 from fractions import Fraction
 import io
 
+
 def color_control(border):
     i=0
     if border == "blur":
@@ -103,8 +104,10 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
         date_font = ImageFont.truetype("fonts/Arial.ttf", date_font_size)
     except:
         date_font = ImageFont.load_default()
+        
     date_y = line_y1 + int(border_height * 0.5) -50
     draw.text((current_x, date_y), date_text, font=date_font, fill=(128, 128, 128))
+
 
     # 右侧参数与作者信息
     right_padding = padding
@@ -248,6 +251,5 @@ def compose_photo_card_vertical(img_with_border: Image.Image, metadata: dict, ni
     draw.text((author_x, date_y), date_text, font=date_font, fill=(128, 128, 128))
 
     return img_with_border
-
 
 
