@@ -1,12 +1,44 @@
 from PIL import Image, ImageDraw, ImageFont
 from fractions import Fraction
+import io
 
-def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nikon_logo_path: str, author: str) -> Image.Image:
+
+def color_control(border):
+    i=0
+    if border == "blur":
+        i=256
+    return i
+
+def extract_black_area(image_path, threshold=50):
+    # 打开图片并转换为灰度模式
+    img = Image.open(image_path).convert("L")
+
+    # 创建一个新的 RGBA 图片（带透明通道）
+    result = Image.new("RGBA", img.size, (0, 0, 0, 0))  # 全透明背景
+    pixels = img.load()
+    result_pixels = result.load()
+
+    # 遍历所有像素
+    for y in range(img.height):
+        for x in range(img.width):
+            if pixels[x, y] < threshold:  # 只保留黑色部分
+                result_pixels[x, y] = (0, 0, 0, 255)  # 纯黑色，不透明
+
+    # 将图片存入内存并返回
+    img_io = io.BytesIO()
+    result.save(img_io, format="PNG")
+    img_io.seek(0)
+
+    return Image.open(img_io)  # 直接返回 PIL 图片对象
+
+
+def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nikon_logo_path: str, author: str ,border: str) -> Image.Image:
     w, h = img_with_border.size
     border_top = int(h / 1.10)
 
     # 添加nikon logo
     nikon_logo_img = Image.open(nikon_logo_path).convert("RGBA")
+    #nikon_logo_img = (extract_black_area(nikon_logo_path)).convert("RGBA")
 
     # 目标高度为底部边框的 60%
     border_height = h - border_top
@@ -36,8 +68,8 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
 
     # 加载型号 logo
     if model_logo_path:
-        model_logo_img = Image.open(model_logo_path).convert("RGBA")
-        target_height_model = target_height  # 与 Nikon logo 一致高度
+        model_logo_img = (extract_black_area(model_logo_path)).convert("RGBA")
+        target_height_model = target_height - 30 # 与 Nikon logo 一致高度
         scale_m = target_height_model / model_logo_img.height
         model_logo_resized = model_logo_img.resize((int(model_logo_img.width * scale_m), target_height_model), Image.LANCZOS)
 
@@ -45,13 +77,14 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
         current_x += model_logo_resized.width + int(w * 0.01)
 
     # 绘制竖线
-    line_color = (120, 120, 120)
-    line_height = int(border_height * 0.9)
+    i = color_control(border)
+    line_color = (i, i, i)
+    line_height = int(border_height * 0.6)
     line_x = current_x
     line_y1 = border_top + (border_height - line_height) // 2
-    line_y2 = line_y1 + line_height
+    line_y2 = line_y1 + line_height + 50
     draw = ImageDraw.Draw(img_with_border)
-    draw.line((line_x, line_y1, line_x, line_y2), fill=line_color, width=2)
+    draw.line((line_x, line_y1, line_x, line_y2), fill=line_color, width=4)
     current_x += int(w * 0.01)
 
     # 镜头型号（上）
@@ -61,7 +94,8 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
         lens_font = ImageFont.truetype("fonts/texgyreadventor-bold.otf", lens_font_size)
     except:
         lens_font = ImageFont.load_default()
-    draw.text((current_x, line_y1), lens_text, font=lens_font, fill=(0, 0, 0))
+    lens_y = line_y1 - 50
+    draw.text((current_x, lens_y), lens_text, font=lens_font, fill=(i, i, i))
 
     # 拍摄时间（下）
     date_text = metadata.get("Date", "").replace(":", "/", 2)
@@ -70,8 +104,10 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
         date_font = ImageFont.truetype("fonts/Arial.ttf", date_font_size)
     except:
         date_font = ImageFont.load_default()
-    date_y = line_y1 + int(border_height * 0.5)
-    draw.text((current_x, date_y), date_text, font=date_font, fill=(120, 120, 120))
+        
+    date_y = line_y1 + int(border_height * 0.5) -50
+    draw.text((current_x, date_y), date_text, font=date_font, fill=(128, 128, 128))
+
 
     # 右侧参数与作者信息
     right_padding = padding
@@ -95,11 +131,11 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
 
     param_bbox = draw.textbbox((0, 0), param_text, font=param_font)
     param_text_width = param_bbox[2] - param_bbox[0]
-    param_y = line_y1
-    draw.text((right_x - param_text_width, param_y), param_text, font=param_font, fill=(0, 0, 0))
+    param_y = lens_y
+    draw.text((right_x - param_text_width, param_y), param_text, font=param_font, fill=(i, i, i))
 
     # 作者信息
-    author_text = f"Photo by {author}"
+    author_text = f"Shot by {author}"
     author_font_size = int(border_height * 0.2)
     try:
         author_font = ImageFont.truetype("fonts/Arial.ttf", author_font_size)
@@ -108,15 +144,16 @@ def compose_photo_card_horizon(img_with_border: Image.Image, metadata: dict, nik
 
     author_bbox = draw.textbbox((0, 0), author_text, font=author_font)
     author_text_width = author_bbox[2] - author_bbox[0]
-    author_y = line_y1 + int(border_height * 0.5)
-    draw.text((right_x - author_text_width, author_y), author_text, font=author_font, fill=(120, 120, 120))
+    #author_y = line_y1 + int(border_height * 0.5)
+    author_y = date_y
+    draw.text((right_x - author_text_width, author_y), author_text, font=author_font, fill=(128, 128, 128))
 
     return img_with_border
 
 from PIL import Image, ImageDraw, ImageFont
 from fractions import Fraction
 
-def compose_photo_card_vertical(img_with_border: Image.Image, metadata: dict, nikon_logo_path: str, author: str, model_logo_scale: float = 0.4) -> Image.Image:
+def compose_photo_card_vertical(img_with_border: Image.Image, metadata: dict, nikon_logo_path: str, author: str, border: str, model_logo_scale: float = 0.4) -> Image.Image:
     w, h = img_with_border.size
     is_portrait = h > w  # 竖屏检测
     border_top = int(h / (1.10 if is_portrait else 1.15))  # 竖屏边框稍大
@@ -192,27 +229,27 @@ def compose_photo_card_vertical(img_with_border: Image.Image, metadata: dict, ni
     left_x = padding  # 左侧对齐
     right_x = x_model + model_logo_img.width + 6.5*padding   # 右侧对齐
 
+    i = color_control(border)
     # **镜头信息和拍摄参数居左**
     lens_y = border_top + int(border_height * 0.1) + 110  # 放在左上方
-    draw.text((left_x, lens_y), lens_text, font=lens_font, fill=(0, 0, 0))
+    draw.text((left_x, lens_y), lens_text, font=lens_font, fill=(i, i, i))
 
     param_bbox = draw.textbbox((0, 0), param_text, font=param_font)
     param_text_width = param_bbox[2] - param_bbox[0]
     param_y = lens_y + lens_font_size + 40   # 放在镜头信息下方
-    draw.text((left_x, param_y), param_text, font=param_font, fill=(0, 0, 0))
+    draw.text((left_x, param_y), param_text, font=param_font, fill=(i, i, i))
 
     author_text = f"Shot by {author}"
     author_bbox = draw.textbbox((0, 0), author_text, font=author_font)
     author_text_width = author_bbox[2] - author_bbox[0]
     author_y = lens_y  # 放在拍摄时间下方
     author_x = right_x
-    draw.text((author_x, author_y), author_text, font=author_font, fill=(120, 120, 120))
+    draw.text((author_x, author_y), author_text, font=author_font, fill=(128, 128, 128))
 
     # **拍摄时间和作者信息居右**
     date_y = param_y  # 放在右上方
-    draw.text((author_x, date_y), date_text, font=date_font, fill=(120, 120, 120))
+    draw.text((author_x, date_y), date_text, font=date_font, fill=(128, 128, 128))
 
     return img_with_border
-
 
 
