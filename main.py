@@ -39,13 +39,21 @@ def process_single_file(nef_path, output_path, author, border):
     final_img.save(output_path)
     print(f"✅ Saved with bottom border: {output_path}")
 
-def batch_process_images(input_dir, output_dir, author, border):
+def batch_process_images(input_dir, output_dir, author, border, progress_callback=None):
     os.makedirs(output_dir, exist_ok=True)
     nef_files = glob.glob(os.path.join(input_dir, "*.nef")) + glob.glob(os.path.join(input_dir, "*.jpg"))
-    for image_path in tqdm(nef_files, desc="Processing images"):
-        filename = os.path.splitext(os.path.basename(image_path))[0] + "_processed.jpg"
-        output_path = os.path.join(output_dir, filename)
-        process_single_file(image_path, output_path, author, border)
+    total = len(nef_files)
+    if progress_callback:
+        for idx, image_path in enumerate(nef_files):
+            filename = os.path.splitext(os.path.basename(image_path))[0] + "_processed.jpg"
+            output_path = os.path.join(output_dir, filename)
+            process_single_file(image_path, output_path, author, border)
+            progress_callback(idx + 1, total)
+    else:
+        for image_path in tqdm(nef_files, desc="Processing images"):
+            filename = os.path.splitext(os.path.basename(image_path))[0] + "_processed.jpg"
+            output_path = os.path.join(output_dir, filename)
+            process_single_file(image_path, output_path, author, border)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a Nikon photo log image.")

@@ -1,3 +1,5 @@
 rawpy
 Pillow
 exifread
+tqdm
+PyQt5

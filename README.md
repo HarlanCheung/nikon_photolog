@@ -2,7 +2,7 @@
 
 A Python tool to generate a beautifully formatted photo card from Nikon NEF (RAW) files. The script overlays shooting information, camera and lens details, and author credits onto an image with a custom visual layout.
 
-**Version:** 1.0.1
+**Version:** 1.1
 
 ---
 
@@ -36,6 +36,7 @@ photolog/
 │   ├── Nikon_logo.png
 │   ├── NikonZ5_logo.png
 │   └── NikonD750_logo.png
+├── GUI.py                      # PyQt5-based GUI interface
 ```
 
 ---
@@ -71,6 +72,11 @@ To process all `.NEF` and `.JPG` files in a folder, use the `--batch` flag:
 python main.py input_folder output_folder --author "Your Name" --border "blur" --batch
 ```
 
+### Run the GUI (PyQt5)
+```bash
+python GUI.py
+```
+
 ---
 
 ## 📝 Requirements
@@ -80,6 +86,7 @@ python main.py input_folder output_folder --author "Your Name" --border "blur" -
   - `Pillow`
   - `exifread`
   - `exiftool` (for accurate lens identification, especially with legacy Nikon lenses)
+  - `PyQt5` (for GUI interface)
 
 You can install them via:
 ```bash
@@ -89,6 +96,9 @@ pip install rawpy Pillow exifread
 ---
 
 ## 🆕 Changelog
+
+**v1.1**
+- Added graphical user interface (GUI) using PyQt5
 
 **v1.0.1**
 - Added batch processing support for `.NEF` and `.JPG` images in a folder
