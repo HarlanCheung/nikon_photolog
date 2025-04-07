@@ -77,33 +77,41 @@ class PhotoLogGUI(QMainWindow):
         output_btn.setMinimumWidth(150)
         self.output_path = QLineEdit()
         self.output_path.setReadOnly(True)
-        select_output_file_btn = QPushButton("Select File")
-        select_output_file_btn.clicked.connect(self.select_output_file)
         select_output_folder_btn = QPushButton("Select Folder")
         select_output_folder_btn.clicked.connect(self.select_output_folder)
         output_layout.addWidget(output_btn)
         output_layout.addWidget(self.output_path)
-        output_layout.addWidget(select_output_file_btn)
         output_layout.addWidget(select_output_folder_btn)
         layout.addLayout(output_layout)
 
-        # 第三行：作者名（弹窗选择）
+        # 第三行：输出后缀
+        suffix_layout = QHBoxLayout()
+        suffix_label = QLabel("Output Suffix:")
+        suffix_label.setMinimumWidth(150)
+        self.suffix_input = QLineEdit()
+        self.suffix_input.setPlaceholderText("e.g., _processed")
+        self.suffix_input.setText("_processed")
+        suffix_layout.addWidget(suffix_label)
+        suffix_layout.addWidget(self.suffix_input)
+        layout.addLayout(suffix_layout)
+
+        # 第四行：作者名（弹窗选择）
         author_btn = QPushButton("Author")
         author_btn.clicked.connect(self.set_author)
         layout.addWidget(author_btn)
 
-        # 第四行：边框风格（弹窗选择）
+        # 第五行：边框风格（弹窗选择）
         border_btn = QPushButton("Border")
         border_btn.clicked.connect(self.set_border)
         layout.addWidget(border_btn)
 
-        # 第五行：运行按钮
+        # 第六行：运行按钮
         run_btn = QPushButton("RUN!")
         run_btn.setStyleSheet("background-color: red; color: white; font-weight: bold; font-size: 18px;")
         run_btn.clicked.connect(self.run_process)
         layout.addWidget(run_btn, alignment=Qt.AlignHCenter)
 
-        # 第六行：日志框
+        # 第七行：日志框
         self.log_box = QTextEdit()
         self.log_box.setReadOnly(True)
         layout.addWidget(self.log_box)
@@ -118,7 +126,7 @@ class PhotoLogGUI(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def select_input_file(self):
-        path, _ = QFileDialog.getOpenFileName(self, "Select Input File", "", "Images (*.nef *.jpg);;All Files (*)")
+        path, _ = QFileDialog.getOpenFileName(self, "Select Input File", "", "Images (*.nef *.NEF *.jpg);;All Files (*)")
         if path:
             self.input_path.setText(path)
 
@@ -126,11 +134,6 @@ class PhotoLogGUI(QMainWindow):
         folder = QFileDialog.getExistingDirectory(self, "Select Input Folder")
         if folder:
             self.input_path.setText(folder)
-
-    def select_output_file(self):
-        path, _ = QFileDialog.getSaveFileName(self, "Select Output File", "", "Images (*.png *.jpg);;All Files (*)")
-        if path:
-            self.output_path.setText(path)
 
     def select_output_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
@@ -163,6 +166,14 @@ class PhotoLogGUI(QMainWindow):
             self.log_box.append("❌ Please select input and output paths first.")
             return
 
+        suffix = self.suffix_input.text()
+        if not suffix.startswith("_"):
+            suffix = "_" + suffix
+        output_path = os.path.join(
+            output_path,
+            os.path.splitext(os.path.basename(input_path))[0] + f"{suffix}.jpg"
+        )
+
         self.log_box.append("🚀 Running photolog process...")
         self.log_box.append(f"Input: {input_path}")
         self.log_box.append(f"Output: {output_path}")
@@ -171,6 +182,9 @@ class PhotoLogGUI(QMainWindow):
         try:
             from main import process_single_file, batch_process_images
             
+            if os.path.isfile(input_path) and os.path.isdir(output_path):
+                output_path = os.path.join(output_path, os.path.splitext(os.path.basename(input_path))[0] + "_processed.jpg")
+
             if os.path.isfile(input_path):
                 process_single_file(input_path, output_path, self.author, self.border)
             elif os.path.isdir(input_path):
