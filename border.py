@@ -1,8 +1,8 @@
-from PIL import Image, ImageFilter,ImageDraw
+from PIL import Image, ImageFilter, ImageDraw
 
-def create_border(img:Image.Image,border) -> Image.Image:
+def create_border(img: Image.Image, border, border_color=(255, 255, 255)) -> Image.Image:
     if border == "basic":
-        new_img = create_bottom_border_canvas(img)
+        new_img = create_bottom_border_canvas(img, border_color=border_color)
     if border == "blur":
         new_img = create_blurred_background(img)
 

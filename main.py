@@ -18,12 +18,12 @@ def load_image(image_path):
     else:
         return Image.open(image_path).convert("RGB")
 
-def process_single_file(nef_path, output_path, author, border):
+def process_single_file(nef_path, output_path, author, border, border_color=(255, 255, 255)):
     img = load_image(nef_path)
     meta = get_nef_metadata(nef_path)
     print("Metadata:", meta)
 
-    img_with_border = create_border(img, border)
+    img_with_border = create_border(img, border, border_color=border_color)
 
     if img_with_border.width > img_with_border.height:
         final_img = compose_photo_card_horizon(
@@ -39,7 +39,7 @@ def process_single_file(nef_path, output_path, author, border):
     final_img.save(output_path)
     print(f"✅ Saved with bottom border: {output_path}")
 
-def batch_process_images(input_dir, output_dir, author, border, progress_callback=None):
+def batch_process_images(input_dir, output_dir, author, border, progress_callback=None, border_color=(255, 255, 255)):
     os.makedirs(output_dir, exist_ok=True)
     nef_files = glob.glob(os.path.join(input_dir, "*.nef")) + glob.glob(os.path.join(input_dir, "*.jpg"))
     total = len(nef_files)
@@ -47,13 +47,13 @@ def batch_process_images(input_dir, output_dir, author, border, progress_callbac
         for idx, image_path in enumerate(nef_files):
             filename = os.path.splitext(os.path.basename(image_path))[0] + "_processed.jpg"
             output_path = os.path.join(output_dir, filename)
-            process_single_file(image_path, output_path, author, border)
+            process_single_file(image_path, output_path, author, border, border_color=border_color)
             progress_callback(idx + 1, total)
     else:
         for image_path in tqdm(nef_files, desc="Processing images"):
             filename = os.path.splitext(os.path.basename(image_path))[0] + "_processed.jpg"
             output_path = os.path.join(output_dir, filename)
-            process_single_file(image_path, output_path, author, border)
+            process_single_file(image_path, output_path, author, border, border_color=border_color)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate a Nikon photo log image.")

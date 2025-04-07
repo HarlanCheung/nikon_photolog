@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QLabel, QFileDialog,
-    QLineEdit, QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QDialog, QPushButton, QDialogButtonBox
+    QLineEdit, QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QComboBox, QDialog, QPushButton, QDialogButtonBox, QColorDialog
 )
 from PyQt5.QtCore import Qt
 import sys
@@ -45,6 +45,7 @@ class PhotoLogGUI(QMainWindow):
         # 参数保存（必须放在前面，以便 QLabel 初始化时可以使用）
         self.author = "Harlan"
         self.border = "basic"
+        self.border_color = (255, 255, 255)  # Default white
 
         screen = QApplication.primaryScreen().size()
         w = int(screen.width() * 0.5)
@@ -154,6 +155,16 @@ class PhotoLogGUI(QMainWindow):
             self.border_label.setText(f"Current Border: {self.border}")
             self.log_box.append(f"✅ Border style set to: {self.border}")
 
+            if self.border == "basic":
+                color_dialog = QColorDialog(self)
+                color_dialog.setOption(QColorDialog.ShowAlphaChannel, False)
+                color_dialog.move(self.mapToGlobal(self.rect().bottomLeft()))
+                if color_dialog.exec_():
+                    color = color_dialog.currentColor()
+                    if color.isValid():
+                        self.border_color = color.getRgb()[:3]
+                        self.log_box.append(f"🎨 Border color set to: {self.border_color}")
+
     def update_progress(self, current, total):
         percent = int((current / total) * 100)
         self.log_box.append(f"📸 Progress: {current}/{total} ({percent}%)")
@@ -177,7 +188,7 @@ class PhotoLogGUI(QMainWindow):
         self.log_box.append("🚀 Running photolog process...")
         self.log_box.append(f"Input: {input_path}")
         self.log_box.append(f"Output: {output_path}")
-        self.log_box.append(f"Author: {self.author}, Border: {self.border}")
+        self.log_box.append(f"Author: {self.author}, Border: {self.border}, Border Color: {self.border_color}")
 
         try:
             from main import process_single_file, batch_process_images
@@ -186,9 +197,9 @@ class PhotoLogGUI(QMainWindow):
                 output_path = os.path.join(output_path, os.path.splitext(os.path.basename(input_path))[0] + "_processed.jpg")
 
             if os.path.isfile(input_path):
-                process_single_file(input_path, output_path, self.author, self.border)
+                process_single_file(input_path, output_path, self.author, self.border, border_color=self.border_color)
             elif os.path.isdir(input_path):
-                batch_process_images(input_path, output_path, self.author, self.border, self.update_progress)
+                batch_process_images(input_path, output_path, self.author, self.border, progress_callback=self.update_progress, border_color=self.border_color)
             else:
                 self.log_box.append("❌ Invalid input path.")
                 return
