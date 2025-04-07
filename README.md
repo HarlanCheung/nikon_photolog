@@ -88,11 +88,6 @@ python GUI.py
   - `exiftool` (for accurate lens identification, especially with legacy Nikon lenses)
   - `PyQt5` (for GUI interface)
 
-You can install them via:
-```bash
-pip install rawpy Pillow exifread
-```
-
 ---
 
 ## 🆕 Changelog
